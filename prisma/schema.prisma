@@ -1,0 +1,102 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum WorkflowState {
+  Scheduled
+  Draft
+  Inactive
+  Running
+  Completed
+}
+
+enum NodeType {
+  ACTION
+  MANUAL_API
+  SET
+  FILTER
+  DELAY
+  CHAT
+  TRANSFORM
+  EXTRACT
+  CONDITION
+  LOOP
+  SWITCH
+  FAIL
+  WEBHOOK
+  PARALLEL
+  MERGE
+}
+
+model User {
+  id          Int          @id @default(autoincrement())
+  email       String       @unique
+  password    String
+  isActive    Boolean
+  workflows   Workflow[]
+  credentials Credential[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime?    @updatedAt
+}
+
+model Credential {
+  id         Int    @id @default(autoincrement())
+  userId     Int
+  user       User   @relation(fields: [userId], references: [id])
+  name       String @unique
+  credential Json
+}
+
+model Workflow {
+  id            Int            @id @default(autoincrement())
+  name          String
+  description   String
+  isActive      Boolean
+  userId        Int
+  state         WorkflowState
+  connections   Connection[]
+  executionLogs ExecutionLog[]
+  user          User           @relation(fields: [userId], references: [id])
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime?      @updatedAt
+}
+
+model Node {
+  id          Int          @id @default(autoincrement())
+  workflow_id Int
+  name        String
+  type        NodeType
+  outgoing    Connection[] @relation("FromNode")
+  incoming    Connection[] @relation("ToNode")
+}
+
+model Connection {
+  id         Int      @id @default(autoincrement())
+  workflowId Int
+  fromNodeId Int
+  toNodeId   Int
+  workflow   Workflow @relation(fields: [workflowId], references: [id])
+  fromNode   Node     @relation("FromNode", fields: [fromNodeId], references: [id])
+  toNode     Node     @relation("ToNode", fields: [toNodeId], references: [id])
+}
+
+model ExecutionLog {
+  id         Int       @id @default(autoincrement())
+  workflowId Int
+  startedAt  DateTime
+  endTime    DateTime?
+  status     String
+  resultData Json?
+  error      Json?
+  workflow   Workflow  @relation(fields: [workflowId], references: [id])
+}

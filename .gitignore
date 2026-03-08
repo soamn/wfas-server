@@ -1,13 +1,12 @@
 /node_modules
 
 
-
 .pnpm-debug.log*
+.vscode
 
 
-
-.env*
-
+.env
 
 
+dist
 /generated/prisma

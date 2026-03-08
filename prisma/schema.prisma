@@ -36,10 +36,19 @@ enum NodeType {
   WEBHOOK
   PARALLEL
   MERGE
+  TRIGGER
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  sid       String   @unique
+  data      String
+  expiresAt DateTime
 }
 
 model User {
   id          Int          @id @default(autoincrement())
+  name        String
   email       String       @unique
   password    String
   isActive    Boolean
@@ -52,51 +61,60 @@ model User {
 model Credential {
   id         Int    @id @default(autoincrement())
   userId     Int
-  user       User   @relation(fields: [userId], references: [id])
+  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   name       String @unique
   credential Json
 }
 
 model Workflow {
-  id            Int            @id @default(autoincrement())
-  name          String
-  description   String
-  isActive      Boolean
+  id            String         @id @default(cuid())
+  name          String?
+  description   String?
   userId        Int
   state         WorkflowState
+  nodes         Node[]
   connections   Connection[]
   executionLogs ExecutionLog[]
-  user          User           @relation(fields: [userId], references: [id])
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt     DateTime       @default(now())
   updatedAt     DateTime?      @updatedAt
 }
 
 model Node {
-  id          Int          @id @default(autoincrement())
-  workflow_id Int
-  name        String
-  type        NodeType
-  outgoing    Connection[] @relation("FromNode")
-  incoming    Connection[] @relation("ToNode")
+  id         String       @id @default(cuid())
+  workflowId String
+  type       NodeType
+  label      String?
+  status     String?      @default("idle")
+  position   Json?
+  result     Json?
+  error      String?
+  index      Int
+  outgoing   Connection[] @relation("SourceNode")
+  incoming   Connection[] @relation("TargetNode")
+  config     Json?
+  workflow   Workflow     @relation(fields: [workflowId], references: [id], onDelete: Cascade)
 }
 
 model Connection {
-  id         Int      @id @default(autoincrement())
-  workflowId Int
-  fromNodeId Int
-  toNodeId   Int
-  workflow   Workflow @relation(fields: [workflowId], references: [id])
-  fromNode   Node     @relation("FromNode", fields: [fromNodeId], references: [id])
-  toNode     Node     @relation("ToNode", fields: [toNodeId], references: [id])
+  id           Int      @id @default(autoincrement())
+  workflowId   String
+  sourceNodeId String
+  targetNodeId String
+  sourceHandle String?
+  targetHandle String?
+  workflow     Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  sourceNode   Node     @relation("SourceNode", fields: [sourceNodeId], references: [id], onDelete: Cascade)
+  targetNode   Node     @relation("TargetNode", fields: [targetNodeId], references: [id], onDelete: Cascade)
 }
 
 model ExecutionLog {
   id         Int       @id @default(autoincrement())
-  workflowId Int
+  workflowId String
   startedAt  DateTime
   endTime    DateTime?
   status     String
   resultData Json?
   error      Json?
-  workflow   Workflow  @relation(fields: [workflowId], references: [id])
+  workflow   Workflow  @relation(fields: [workflowId], references: [id], onDelete: Cascade)
 }

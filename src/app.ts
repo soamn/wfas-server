@@ -6,14 +6,16 @@ import {
   sessionOptions,
   verifySession,
 } from "./middleware/session.middleware.js";
+import config from "./config/config.js";
 
 const app: Express = express();
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: config.FRONTEND_URL,
     credentials: true,
   }),
 );
+app.set("trust proxy", 1);
 app.use(express.json());
 app.use(session(sessionOptions));
 app.use("/api", verifySession, router);

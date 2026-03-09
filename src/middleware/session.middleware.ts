@@ -3,15 +3,17 @@ import type { CookieOptions, SessionOptions } from "express-session";
 import { prisma } from "../lib/prisma.js";
 import type { NextFunction, Request, Response } from "express";
 import { UserModel } from "../modules/user/user.model.js";
+import config from "../config/config.js";
 
 const cookieOptions: CookieOptions = {
-  maxAge: 7 * 24 * 60 * 60 * 1000,
+  maxAge: 30 * 24 * 60 * 60 * 1000,
   sameSite: "lax",
-  secure: false,
+  secure: config.IS_PRODUCTION,
   httpOnly: true,
+  path: "/",
 };
 const prismaSessionStore: PrismaSessionStore = new PrismaSessionStore(prisma, {
-  checkPeriod: 2 * 60 * 1000,
+  checkPeriod: 30 * 60 * 1000,
   dbRecordIdIsSessionId: true,
 });
 
@@ -39,7 +41,7 @@ export const verifySession = async (
 };
 
 export const sessionOptions: SessionOptions = {
-  secret: "some",
+  secret: config.ENCRYPTION_KEY,
   cookie: cookieOptions,
   store: prismaSessionStore,
   resave: false,

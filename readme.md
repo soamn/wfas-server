@@ -9,7 +9,7 @@
 
 ### Workflow Automation System Server
 
-WFAS Server is application server for WFAS, Handles, Authentication, Validation, workflow validation, workflow cycle check, handles wfas-ui requests, handles user sessions, interacts with wfas-engine for execution and syncing, updates wfas-ui with workflow data, Interacts with providers to setup webhooks and encrypts data and safely sends data to wfas-engine.
+WFAS Server is application server for WFAS, Handles Authentication, Validation, workflow validation, workflow dag check, handles wfas-ui requests, handles user sessions, interacts with wfas-engine for execution and syncing, updates wfas-ui with workflow data, Interacts with providers to setup webhooks and encrypts data and safely sends data to wfas-engine.
 
 ---
 
@@ -36,6 +36,7 @@ flowchart LR
     class Ui,Server wfasStyle
 
 ```
+
 ---
 
 ## Local Setup

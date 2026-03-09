@@ -1,15 +1,10 @@
 import type { Request, Response } from "express";
-import {
-  register,
-  login,
-  updatePassword,
-  addCredential,
-  deleteCredential,
-} from "./user.service.js";
+import { register, login, updatePassword } from "./user.service.js";
 
 import { errorHandler } from "../../middleware/error.middleware.js";
 import { updateUserSchema, userSchema } from "../../validators/user.schema.js";
 import { checkSession, ValidateBody } from "../../validators/validator.js";
+import config from "../../config/config.js";
 
 export const registerUser = async (req: Request, res: Response) => {
   try {
@@ -48,21 +43,38 @@ export const loginUser = async (req: Request, res: Response) => {
 };
 export const logoutUser = async (req: Request, res: Response) => {
   try {
-    if (!req.user) {
-      return res.status(409).json({
-        message: "Already Logged out",
-      });
-    }
-    req.session.destroy((err) => {
-      if (err) {
-        return res.status(500).json({ error: "Could not log out" });
-      }
+    if (req.session) {
+      req.session.destroy((err) => {
+        const clearOptions = {
+          path: "/",
+          httpOnly: true,
+          sameSite: "lax" as const,
+          secure: config.IS_PRODUCTION,
+        };
 
-      res.clearCookie("connect.sid");
-      res.json({ message: "Logged out successfully" });
-    });
+        if (err) {
+          res.clearCookie("connect.sid", clearOptions);
+          return res.status(500).json({ error: "Could not destroy session" });
+        }
+
+        res.clearCookie("connect.sid", clearOptions);
+        return res.json({ message: "Logged out successfully" });
+      });
+    } else {
+      res.clearCookie("connect.sid", {
+        path: "/",
+        httpOnly: true,
+        sameSite: "lax",
+        secure: config.IS_PRODUCTION,
+      });
+      return res.json({ message: "Cookie cleared" });
+    }
   } catch (error: any) {
-    errorHandler(error, res);
+    if (typeof errorHandler === "function") {
+      errorHandler(error, res);
+    } else {
+      res.status(500).json({ error: "Internal server error" });
+    }
   }
 };
 export const updateUserPassword = async (req: Request, res: Response) => {

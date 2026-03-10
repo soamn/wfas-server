@@ -20,11 +20,11 @@ export const GoogleSheetsProvider: ProviderService = {
         email: credential.credential.email,
       }),
     ).toString("base64");
-
+    const redirect_uri = `${config.BACKEND_URL}/api/credential/google/callback`;
     const rootUrl = "https://accounts.google.com/o/oauth2/v2/auth";
     const options = {
       client_id: config.GOOGLE_CLIENT_ID,
-      redirect_uri: "http://localhost:8000/api/credential/google/callback",
+      redirect_uri: redirect_uri,
       response_type: "code",
       scope: [
         "https://www.googleapis.com/auth/spreadsheets",
@@ -46,6 +46,7 @@ export const GoogleSheetsProvider: ProviderService = {
   },
 
   async create(credential: CredentialType, email: string) {
+    const redirect_uri = `${config.BACKEND_URL}/api/credential/google/callback`;
     const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -53,7 +54,7 @@ export const GoogleSheetsProvider: ProviderService = {
         code: credential.credential.key,
         client_id: config.GOOGLE_CLIENT_ID,
         client_secret: config.GOOGLE_CLIENT_SECRET,
-        redirect_uri: "http://localhost:8000/api/credential/google/callback",
+        redirect_uri: redirect_uri,
         grant_type: "authorization_code",
       }),
     });

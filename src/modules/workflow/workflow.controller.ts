@@ -107,8 +107,12 @@ export const executeWorkflow = async (req: Request, res: Response) => {
     if (!parsed.success) {
       throw new AppError("Request Invalid", 400, "INVALID_REQUEST");
     }
-    await executeWorkflowService(parsed.data, sessionData.user.id);
-    return res.status(200).json({ success: true });
+    executeWorkflowService(parsed.data, sessionData.user.id).catch(
+      (err: any) => {
+        errorHandler(err, res);
+      },
+    );
+    return res.status(202).json({ success: true });
   } catch (error: any) {
     errorHandler(error, res);
   }

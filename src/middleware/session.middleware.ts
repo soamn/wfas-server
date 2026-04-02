@@ -7,10 +7,11 @@ import config from "../config/config.js";
 
 const cookieOptions: CookieOptions = {
   maxAge: 30 * 24 * 60 * 60 * 1000,
-  sameSite: "lax",
-  secure: config.IS_PRODUCTION,
+  sameSite: "none",
+  secure: true,
   httpOnly: true,
   path: "/",
+  domain: ".wfas.online",
 };
 const prismaSessionStore: PrismaSessionStore = new PrismaSessionStore(prisma, {
   checkPeriod: 30 * 60 * 1000,
